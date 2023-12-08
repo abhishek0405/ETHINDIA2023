@@ -89,7 +89,6 @@ def process_prompt(user_prompt):
     functions=function_descriptions,
     function_call="auto",  # specify the function call
     )
-    print("completion object",completion)
     output = completion.choices[0].message
     return output
 

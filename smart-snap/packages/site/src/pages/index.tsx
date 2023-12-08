@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import styled from 'styled-components';
+import { ethers } from 'ethers';
 
 import {
   ConnectButton,
@@ -14,7 +15,7 @@ import {
   connectSnap,
   getSnap,
   isLocalSnap,
-  sendHello,
+  processPrompt,
   shouldDisplayReconnectButton,
 } from '../utils';
 
@@ -104,6 +105,7 @@ const ErrorMessage = styled.div`
 
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
+  const provider =  new ethers.BrowserProvider(window.ethereum)
 
   const isMetaMaskReady = isLocalSnap(defaultSnapOrigin)
     ? state.isFlask
@@ -124,9 +126,53 @@ const Index = () => {
     }
   };
 
-  const handleSendHelloClick = async () => {
+  const resolveENSAddress = async (rec_address: any) => {
+    console.log(rec_address)
+    const address = await provider.resolveName(rec_address)
+    return address
+  }
+
+  const sendFundsToAddress = async(res:any) =>{
+      const rec_address = res.receiver_address;
+      console.log("rec address is ",rec_address)
+      const {amount} = res;
+      var address = await resolveENSAddress(rec_address)
+      const accounts: any = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      window.ethereum
+      .request({
+        method: 'eth_sendTransaction',
+        // The following sends an EIP-1559 transaction. Legacy transactions are also supported.
+        params: [
+          {
+            from: accounts[0], // The user's active address.
+            to: address, // Required except during contract publications.
+            value: Number(amount*1000000000000000000).toString(16), // Only required to send ether to the recipient from the initiating external account.
+            gasLimit: '0x5028', // Customizable by the user during MetaMask confirmation.
+            maxPriorityFeePerGas: '0x3b9aca00', // Customizable by the user during MetaMask confirmation.
+            maxFeePerGas: '0x2540be400', // Customizable by the user during MetaMask confirmation.
+          },
+        ],
+      })
+      .then((txHash) => console.log(txHash))
+      .catch((error) => console.error(error));
+  }
+  
+
+  const handleProcessPrompt = async () => {
     try {
-      await sendHello();
+      const res : any= await processPrompt();
+      //logic to see type of outpu
+      console.log(res)
+      if(res){
+        if(res.function_name ==='send_funds_to_address'){
+        await sendFundsToAddress(res);
+        }
+        else if(res.function_name ==='setup_recurring_payments'){
+          console.log("request for recurring payment")
+        }
+
+      }
+
     } catch (error) {
       console.error(error);
       dispatch({ type: MetamaskActions.SetError, payload: error });
@@ -197,7 +243,7 @@ const Index = () => {
               'Display a custom message within a confirmation screen in MetaMask.',
             button: (
               <SendHelloButton
-                onClick={handleSendHelloClick}
+                onClick={handleProcessPrompt}
                 disabled={!state.installedSnap}
               />
             ),

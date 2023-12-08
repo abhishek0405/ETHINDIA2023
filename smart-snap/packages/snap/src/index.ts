@@ -1,6 +1,20 @@
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
-import { panel, text } from '@metamask/snaps-sdk';
+import { heading, panel, text } from '@metamask/snaps-sdk';
 
+async function getServerResponse(userPrompt: any) {
+  
+  const payload = {
+    user_prompt: userPrompt,
+  };
+  const response = await fetch(`http://localhost:8001/processPrompt`, {
+    method: 'POST',
+    headers: new Headers({
+      'content-type': 'application/json',
+    }),
+    body: JSON.stringify(payload),
+  });
+  return response.json();
+}
 /**
  * Handle incoming JSON-RPC requests, sent through `wallet_invokeSnap`.
  *
@@ -16,20 +30,40 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
   request,
 }) => {
   switch (request.method) {
-    case 'hello':
-      return snap.request({
+    case 'processPrompt':
+      const userPrompt =  await snap.request({
         method: 'snap_dialog',
         params: {
-          type: 'confirmation',
+          type: 'prompt',
           content: panel([
-            text(`Hello, **${origin}**!`),
-            text('This custom confirmation is just for display purposes.'),
-            text(
-              'But you can edit the snap source code to make it do something, if you want to!',
-            ),
+            heading(`Enter your instruction`),
+            text('How can i help you?'),
           ]),
+          placeholder: 'Send 0.001 eth to alice.eth'
         },
       });
+      console.log(userPrompt)
+      if(userPrompt!==null){
+        const res = await getServerResponse(userPrompt);
+      //   const res = {
+      //     "receiver_address":"abhishek0405.eth",
+      //     "amount":"0.001"
+      // }
+        console.log("response from server is "+JSON.stringify(res));
+        return res;
+
+        // const userPrompt1 =  await snap.request({
+        //   method: 'snap_dialog',
+        //   params: {
+        //     type: 'prompt',
+        //     content: panel([
+        //       heading(`Enter your instruction`),
+        //       text('How can i help you?'),
+        //     ]),
+        //     placeholder: 'Send 0.001 eth to alice.eth'
+        //   },
+        // });
+      }
     default:
       throw new Error('Method not found.');
   }

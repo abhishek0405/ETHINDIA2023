@@ -57,11 +57,12 @@ export const getSnap = async (version?: string): Promise<Snap | undefined> => {
  * Invoke the "hello" method from the example snap.
  */
 
-export const sendHello = async () => {
-  await window.ethereum.request({
+export const processPrompt = async () => {
+  const res = await window.ethereum.request({
     method: 'wallet_invokeSnap',
-    params: { snapId: defaultSnapOrigin, request: { method: 'hello' } },
+    params: { snapId: defaultSnapOrigin, request: { method: 'processPrompt' } },
   });
+  return res; 
 };
 
 export const isLocalSnap = (snapId: string) => snapId.startsWith('local:');
