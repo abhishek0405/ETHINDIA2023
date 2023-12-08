@@ -1,5 +1,5 @@
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
-import { heading, panel, text } from '@metamask/snaps-sdk';
+import { heading, panel, text,divider } from '@metamask/snaps-sdk';
 
 async function getServerResponse(userPrompt: any) {
   
@@ -50,20 +50,40 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       //     "amount":"0.001"
       // }
         console.log("response from server is "+JSON.stringify(res));
-        return res;
+        if(res.function_name==='setup_recurring_payments'){
+        const recurringConfirmationPrompt =  await snap.request({
+          method: 'snap_dialog',
+          params: {
+            type: 'confirmation',
+            content: panel([
+              heading(`Please review the payment setup`),
+              divider(),
+              text('Receiver :  ' + res.receiver_address),
+              divider(),
+              text('Amount :  ' + res.amount + "  tokens "),
+              divider(),
+              text('Pay every :  ' + res.frequency + "  seconds  "),
+              divider(),
+              text('Pay for :  ' + res.end_time + "   seconds  ")
+            ]),
+          },
+        });
+        if(recurringConfirmationPrompt === true){
+          return res;
+        } else{
+          return null;
+        }
+        }else{
+          return res;
 
-        // const userPrompt1 =  await snap.request({
-        //   method: 'snap_dialog',
-        //   params: {
-        //     type: 'prompt',
-        //     content: panel([
-        //       heading(`Enter your instruction`),
-        //       text('How can i help you?'),
-        //     ]),
-        //     placeholder: 'Send 0.001 eth to alice.eth'
-        //   },
-        // });
+        }
+
+
       }
+
+    case 'subscribe':
+
+
     default:
       throw new Error('Method not found.');
   }

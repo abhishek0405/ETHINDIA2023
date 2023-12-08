@@ -107,7 +107,7 @@ const ErrorMessage = styled.div`
 
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
-  const goerli_provider = new ethers.JsonRpcProvider("https://rpc.ankr.com/eth_goerli");
+  const goerli_provider = new ethers.JsonRpcProvider("https://eth-goerli.public.blastapi.io");
 
   // const provider =  new ethers.BrowserProvider(window.ethereum)
   const contractAddress = "0x25045806AeF8036f414d5ADdFb9D4EB9A03663D0";
