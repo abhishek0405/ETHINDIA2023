@@ -54,7 +54,7 @@ function_descriptions = [
     },
         {
         "name":"setup_recurring_payments",
-        "description":"Provide details of address,amount,frequency of the recurrent payment to be setup , first payment date and end date in seconds.Eg : Pay abhishek.eth 5 eth every 100 seconds starting from 10th july 2023 for the next hour",
+        "description":"Provide details of address,amount,frequency of the recurrent payment to be setup and end date in seconds.Eg : Pay abhishek.eth 5 eth every 100 seconds for the next hour",
         "parameters": {
             "type": "object",
             "properties": {
@@ -69,10 +69,6 @@ function_descriptions = [
                 "frequency":{
                     "type":"string",
                     "description":"The frequency after which the payment should be trigerred again, always return the value in seconds. Eg : 100 seconds or if the user gives 5 days, convert it to seconds and return"
-                },
-                "start_date":{
-                    "type":"string",
-                    "description":"The start date of the payment, return null if the start date is not given or not convertable in dd/mm/yy format , otherwise return it in dd/mm/yy format."
                 },
                 "end_time":{
                     "type":"string",
