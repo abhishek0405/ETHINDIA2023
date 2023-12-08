@@ -1,6 +1,8 @@
 import { useContext } from 'react';
 import styled from 'styled-components';
 import { ethers } from 'ethers';
+import Web3 from 'web3'
+import subscriptionContractABI from "../../../../../contracts/SubscriptionContractABI.json"
 
 import {
   ConnectButton,
@@ -105,7 +107,10 @@ const ErrorMessage = styled.div`
 
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
-  const provider =  new ethers.BrowserProvider(window.ethereum)
+  const goerli_provider = new ethers.JsonRpcProvider("https://rpc.ankr.com/eth_goerli");
+
+  // const provider =  new ethers.BrowserProvider(window.ethereum)
+  const contractAddress = "0x25045806AeF8036f414d5ADdFb9D4EB9A03663D0";
 
   const isMetaMaskReady = isLocalSnap(defaultSnapOrigin)
     ? state.isFlask
@@ -128,7 +133,7 @@ const Index = () => {
 
   const resolveENSAddress = async (rec_address: any) => {
     console.log(rec_address)
-    const address = await provider.resolveName(rec_address)
+    const address = await goerli_provider.resolveName(rec_address)
     return address
   }
 
@@ -156,6 +161,29 @@ const Index = () => {
       .then((txHash) => console.log(txHash))
       .catch((error) => console.error(error));
   }
+
+  const setupRecurringPayments = async(res:any)=>{
+    const web3Instance = new Web3(window.ethereum);
+            const chainId = await web3Instance.eth.getChainId();
+            console.log("chainid is ",chainId)
+            //base chain
+            if(chainId.toString()==="84531"){
+              const rec_address = res.receiver_address;
+              const {amount} = res;
+              const {frequency} = res;
+              const {end_time} = res;
+              var address = await resolveENSAddress(rec_address)
+              console.log("rec address is ",address)
+              // const provider = new ethers.JsonRpcProvider("");
+              const provider =  new ethers.BrowserProvider(window.ethereum)
+              const signer = await provider.getSigner();
+              const contract :any= new ethers.Contract(contractAddress, subscriptionContractABI, signer )
+              const tx = await contract.subscribe(address, amount,frequency,end_time);
+            }else{
+              console.log("switch to base goerli")
+            }
+          
+  }
   
 
   const handleProcessPrompt = async () => {
@@ -168,8 +196,8 @@ const Index = () => {
         await sendFundsToAddress(res);
         }
         else if(res.function_name ==='setup_recurring_payments'){
-          console.log("request for recurring payment")
-        }
+          await setupRecurringPayments(res);
+          }
 
       }
 
