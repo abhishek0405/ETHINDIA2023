@@ -5,9 +5,10 @@
 https://goerli.basescan.org/tx/0x4e30ce99c47880b7c7c8091038f3df8a451572b0779ca00c73996956d6a5f342
 
 **Subscription contract address**
-0x25045806AeF8036f414d5ADdFb9D4EB9A03663D0
+0x38E1039eD368EDDd73fBBB64ecaAC4447440026b
 
-https://goerli.basescan.org/tx/0x5e29254cee8f11e8f8203755f5daa1377e4998b81c2fb203c7f7a96e27745185
+https://goerli.basescan.org/tx/0x9dedffbf5165923047e83e9834b034642ab998855607cc0ebc82f31908873d5e
+
 
 
 **Key accounts to play with:**
