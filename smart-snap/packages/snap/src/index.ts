@@ -81,7 +81,31 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
 
       }
 
-    case 'subscribe':
+    // case 'subscribe':
+    //   const recurringConfirmationPrompt =  await snap.request({
+    //     method: 'snap_dialog',
+    //     params: {
+    //       type: 'confirmation',
+    //       content: panel([
+    //         heading(`Please review the payment setup`),
+    //         divider(),
+    //         text('Receiver :  ' + request.payload.receiver_address),
+    //         divider(),
+    //         text('Amount :  ' + request.payload.amount),
+    //         divider(),
+    //         text('Pay every :  ' + request.payload.frequency),
+    //         divider(),
+    //         text('Pay for :  ' + request.payload.end_time)
+    //       ]),
+    //     },
+    //   });
+    //   if(recurringConfirmationPrompt === true){
+    //     return request.payload;
+    //   } else{
+    //     return null;
+    //   }
+      
+
 
 
     default:
