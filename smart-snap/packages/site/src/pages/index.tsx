@@ -10,6 +10,7 @@ import {
   ReconnectButton,
   SendHelloButton,
   Card,
+  SubscribeButton,
 } from '../components';
 import { defaultSnapOrigin } from '../config';
 import { MetamaskActions, MetaMaskContext } from '../hooks';
@@ -18,6 +19,7 @@ import {
   getSnap,
   isLocalSnap,
   processPrompt,
+  subscribe,
   shouldDisplayReconnectButton,
 } from '../utils';
 
@@ -110,7 +112,7 @@ const Index = () => {
   const goerli_provider = new ethers.JsonRpcProvider("https://eth-goerli.public.blastapi.io");
 
   // const provider =  new ethers.BrowserProvider(window.ethereum)
-  const contractAddress = "0x25045806AeF8036f414d5ADdFb9D4EB9A03663D0";
+  const contractAddress = "0x38E1039eD368EDDd73fBBB64ecaAC4447440026b";
 
   const isMetaMaskReady = isLocalSnap(defaultSnapOrigin)
     ? state.isFlask
@@ -207,6 +209,18 @@ const Index = () => {
     }
   };
 
+  const handleSubscribe = async () => {
+    try {
+      const res : any= await subscribe();
+      await setupRecurringPayments(res);
+    }
+
+   catch (error) {
+      console.error(error);
+      dispatch({ type: MetamaskActions.SetError, payload: error });
+    }
+  };
+
   return (
     <Container>
       <Heading>
@@ -272,6 +286,25 @@ const Index = () => {
             button: (
               <SendHelloButton
                 onClick={handleProcessPrompt}
+                disabled={!state.installedSnap}
+              />
+            ),
+          }}
+          disabled={!state.installedSnap}
+          fullWidth={
+            isMetaMaskReady &&
+            Boolean(state.installedSnap) &&
+            !shouldDisplayReconnectButton(state.installedSnap)
+          }
+        />
+                <Card
+          content={{
+            title: 'Subscribe',
+            description:
+              'Subscribe to premium ser',
+            button: (
+              <SubscribeButton
+                onClick={handleSubscribe}
                 disabled={!state.installedSnap}
               />
             ),
