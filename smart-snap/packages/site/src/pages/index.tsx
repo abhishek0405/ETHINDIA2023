@@ -3,6 +3,9 @@ import styled from 'styled-components';
 import { ethers } from 'ethers';
 import Web3 from 'web3'
 import subscriptionContractABI from "../../../../../contracts/SubscriptionContractABI.json"
+// import { useSDK } from '@metamask/sdk-react';
+// import React, { useState } from 'react';
+
 
 import {
   ConnectButton,
@@ -109,8 +112,20 @@ const ErrorMessage = styled.div`
 
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
+  // const [account, setAccount] = useState<string>();
   const goerli_provider = new ethers.JsonRpcProvider("https://eth-goerli.public.blastapi.io");
+  // const { sdk, connected, connecting, provider, chainId } = useSDK();
 
+  // const connect = async () => {
+  //   console.log("attempting to connect")
+  //   try {
+  //     const accounts :any= await sdk?.connect();
+  //     console.log("accounts are ",accounts)
+  //     setAccount(accounts?.[0]);
+  //   } catch(err) {
+  //     console.warn(`failed to connect..`, err);
+  //   }
+  // };
   // const provider =  new ethers.BrowserProvider(window.ethereum)
   const contractAddress = "0x38E1039eD368EDDd73fBBB64ecaAC4447440026b";
 
@@ -316,6 +331,19 @@ const Index = () => {
             !shouldDisplayReconnectButton(state.installedSnap)
           }
         />
+
+      {/* <button style={{ padding: 10, margin: 10 }} onClick={connect}>
+        Connect sdk
+      </button> */}
+      {/* {connected && (
+        <div>
+          <>
+            {chainId && `Connected chain: ${chainId}`}
+            <p></p>
+            {account && `Connected account: ${account}`}
+          </>
+        </div>
+      )} */}
         <Notice>
           <p>
             Please note that the <b>snap.manifest.json</b> and{' '}

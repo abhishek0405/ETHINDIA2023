@@ -68,7 +68,7 @@ export const processPrompt = async () => {
 export const subscribe = async () => {
   const res = await window.ethereum.request({
     method: 'wallet_invokeSnap',
-    params: { snapId: defaultSnapOrigin, request: { method: 'subscribe',data:{
+    params: { snapId: defaultSnapOrigin, request: { method: 'subscribe',params:{
       "receiver_address":"abhishek0405.eth",
       "amount": "1",
       "frequency":"30",
