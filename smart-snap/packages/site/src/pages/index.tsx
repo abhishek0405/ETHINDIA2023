@@ -1,5 +1,8 @@
 import { useContext } from 'react';
 import styled from 'styled-components';
+import { ethers } from 'ethers';
+import Web3 from 'web3'
+import subscriptionContractABI from "../../../../../contracts/SubscriptionContractABI.json"
 
 import {
   ConnectButton,
@@ -14,7 +17,7 @@ import {
   connectSnap,
   getSnap,
   isLocalSnap,
-  sendHello,
+  processPrompt,
   shouldDisplayReconnectButton,
 } from '../utils';
 
@@ -104,6 +107,10 @@ const ErrorMessage = styled.div`
 
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
+  const goerli_provider = new ethers.JsonRpcProvider("https://eth-goerli.public.blastapi.io");
+
+  // const provider =  new ethers.BrowserProvider(window.ethereum)
+  const contractAddress = "0x25045806AeF8036f414d5ADdFb9D4EB9A03663D0";
 
   const isMetaMaskReady = isLocalSnap(defaultSnapOrigin)
     ? state.isFlask
@@ -124,9 +131,76 @@ const Index = () => {
     }
   };
 
-  const handleSendHelloClick = async () => {
+  const resolveENSAddress = async (rec_address: any) => {
+    console.log(rec_address)
+    const address = await goerli_provider.resolveName(rec_address)
+    return address
+  }
+
+  const sendFundsToAddress = async(res:any) =>{
+      const rec_address = res.receiver_address;
+      console.log("rec address is ",rec_address)
+      const {amount} = res;
+      var address = await resolveENSAddress(rec_address)
+      const accounts: any = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      window.ethereum
+      .request({
+        method: 'eth_sendTransaction',
+        // The following sends an EIP-1559 transaction. Legacy transactions are also supported.
+        params: [
+          {
+            from: accounts[0], // The user's active address.
+            to: address, // Required except during contract publications.
+            value: Number(amount*1000000000000000000).toString(16), // Only required to send ether to the recipient from the initiating external account.
+            gasLimit: '0x5028', // Customizable by the user during MetaMask confirmation.
+            maxPriorityFeePerGas: '0x3b9aca00', // Customizable by the user during MetaMask confirmation.
+            maxFeePerGas: '0x2540be400', // Customizable by the user during MetaMask confirmation.
+          },
+        ],
+      })
+      .then((txHash) => console.log(txHash))
+      .catch((error) => console.error(error));
+  }
+
+  const setupRecurringPayments = async(res:any)=>{
+    const web3Instance = new Web3(window.ethereum);
+            const chainId = await web3Instance.eth.getChainId();
+            console.log("chainid is ",chainId)
+            //base chain
+            if(chainId.toString()==="84531"){
+              const rec_address = res.receiver_address;
+              const {amount} = res;
+              const {frequency} = res;
+              const {end_time} = res;
+              var address = await resolveENSAddress(rec_address)
+              console.log("rec address is ",address)
+              // const provider = new ethers.JsonRpcProvider("");
+              const provider =  new ethers.BrowserProvider(window.ethereum)
+              const signer = await provider.getSigner();
+              const contract :any= new ethers.Contract(contractAddress, subscriptionContractABI, signer )
+              const tx = await contract.subscribe(address, amount,frequency,end_time);
+            }else{
+              console.log("switch to base goerli")
+            }
+          
+  }
+  
+
+  const handleProcessPrompt = async () => {
     try {
-      await sendHello();
+      const res : any= await processPrompt();
+      //logic to see type of outpu
+      console.log(res)
+      if(res){
+        if(res.function_name ==='send_funds_to_address'){
+        await sendFundsToAddress(res);
+        }
+        else if(res.function_name ==='setup_recurring_payments'){
+          await setupRecurringPayments(res);
+          }
+
+      }
+
     } catch (error) {
       console.error(error);
       dispatch({ type: MetamaskActions.SetError, payload: error });
@@ -197,7 +271,7 @@ const Index = () => {
               'Display a custom message within a confirmation screen in MetaMask.',
             button: (
               <SendHelloButton
-                onClick={handleSendHelloClick}
+                onClick={handleProcessPrompt}
                 disabled={!state.installedSnap}
               />
             ),

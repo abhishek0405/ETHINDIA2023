@@ -57,5 +57,9 @@
       "@lavamoat/preinstall-always-fail": false,
       "sharp": true
     }
+  },
+  "dependencies": {
+    "ethers": "^6.9.0",
+    "web3": "^4.3.0"
   }
 }
