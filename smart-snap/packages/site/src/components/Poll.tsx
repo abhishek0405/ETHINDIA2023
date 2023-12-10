@@ -4,13 +4,19 @@ import { LightNode } from "@waku/sdk";
 import { INotificationMessage } from "../formats";
 import { ethers } from 'ethers';
 import subscriptionContractABI from "../../../../../contracts/SubscriptionContractABI.json"
+import { useSDK } from '@metamask/sdk-react';
+import {notify} from '../utils/snap'
 interface IProps {
   waku: LightNode; // Passing the Waku instance as a prop
 }
 
 export const Poll: React.FC<IProps> = ({ waku }) => {
+    const { sdk, connected, connecting, provider, chainId } = useSDK();
 
     const contractAddress = "0x38E1039eD368EDDd73fBBB64ecaAC4447440026b";
+    const [account,setAccount] = useState('');
+
+   
 
 
   // Process a received vote into the vote counts state
@@ -24,6 +30,19 @@ export const Poll: React.FC<IProps> = ({ waku }) => {
         "message":"moster lil mor"
     })
   }
+
+  useEffect(()=>{
+    const getAccount = async()=>{
+      const accounts :any= await sdk?.connect();
+      console.log("accounts are ",accounts)
+      setAccount(accounts?.[0]);
+      // return accounts[0];
+    }
+
+    getAccount();
+
+    
+  },[])
  
   useEffect(() => {
     const fetchMessages = async () => {
@@ -43,9 +62,16 @@ export const Poll: React.FC<IProps> = ({ waku }) => {
             provider
         );
         // caching the emitted event
-        contract && contract.on("PaymentSent", (sender,receiver,amount) =>  {
-            console.log("Some event is emmited ",sender,receiver,amount);
-        })
+        // contract && contract.on("PaymentSent", async(sender,receiver,amount) =>  {
+        //     console.log("Some event is emmited ",sender,receiver,amount);
+        //     console.log("account set ",account);
+        //     console.log("check flag " + account===sender)
+        //     if(account.toLowerCase()==sender.toLowerCase()){
+        //       console.log("event recd")
+        //       notify(sender,receiver,amount)
+        //     }
+          
+        // })
 
     }
     catch(err){
@@ -54,7 +80,7 @@ export const Poll: React.FC<IProps> = ({ waku }) => {
 
     }
     // fetchMessages();
-    readContractEvents();
+    // readContractEvents();
   }, [waku]);
 
   return (

@@ -104,6 +104,32 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       } else{
         return null;
       }
+
+      case 'notify':
+        const notificationPayload :any = request.params;
+        const notificationPrompt =  await snap.request({
+          method: 'snap_dialog',
+          params: {
+            type: 'alert',
+            content: panel([
+              heading(`Debit Notification`),
+              divider(),
+              text('Money debited from account :  ' + subscriptionPayload.sender_address),
+              divider(),
+              text('Amount :  ' + subscriptionPayload.amount + " tokens"),
+              divider(),
+              text('Money sent to account :  ' + subscriptionPayload.receiver_address + " seconds"),
+              divider(),
+            ]),
+          },
+        });
+        return true;
+        // if(notificationPrompt === true){
+        //   return subscriptionPayload;
+        // } else{
+        //   return null;
+        // }
+
       
 
 

@@ -78,4 +78,16 @@ export const subscribe = async (rec_address:any,amount:any,frequency:any,end_tim
   return res; 
 };
 
+export const notify = async (sender_address:any,rec_address:any,amount:any) => {
+  const res = await window.ethereum.request({
+    method: 'wallet_invokeSnap',
+    params: { snapId: defaultSnapOrigin, request: { method: 'notify',params:{
+      "sender_address":sender_address,
+      "amount": amount,
+      "rec_address":rec_address,
+    } } },
+  });
+  return res; 
+};
+
 export const isLocalSnap = (snapId: string) => snapId.startsWith('local:');
