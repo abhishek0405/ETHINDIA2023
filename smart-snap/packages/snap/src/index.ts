@@ -36,8 +36,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         params: {
           type: 'prompt',
           content: panel([
-            heading(`Enter your instruction`),
-            text('How can i help you?'),
+            heading(`How can I help you`),
           ]),
           placeholder: 'Send 0.001 eth to alice.eth'
         },
@@ -92,11 +91,11 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
             divider(),
             text('Receiver :  ' + subscriptionPayload.receiver_address),
             divider(),
-            text('Amount :  ' + subscriptionPayload.amount),
+            text('Amount :  ' + subscriptionPayload.amount + " tokens"),
             divider(),
-            text('Pay every :  ' + subscriptionPayload.frequency),
+            text('Pay every :  ' + subscriptionPayload.frequency + " seconds"),
             divider(),
-            text('Pay for :  ' + subscriptionPayload.end_time)
+            text('Pay for :  ' + subscriptionPayload.end_time + " seconds")
           ]),
         },
       });

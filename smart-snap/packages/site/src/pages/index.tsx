@@ -4,7 +4,14 @@ import { ethers } from 'ethers';
 import Web3 from 'web3'
 import subscriptionContractABI from "../../../../../contracts/SubscriptionContractABI.json"
 // import { useSDK } from '@metamask/sdk-react';
-// import React, { useState } from 'react';
+import type { LightNode } from "@waku/sdk";
+import React, { useState,useEffect } from 'react';
+import { createNode,retrieveExistingMessages,receiveMessages } from "../lib/waku";
+import { INotificationMessage } from '../formats'
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import { Row, Col } from 'react-bootstrap';
+
 
 
 import {
@@ -14,6 +21,7 @@ import {
   SendHelloButton,
   Card,
   SubscribeButton,
+  Poll
 } from '../components';
 import { defaultSnapOrigin } from '../config';
 import { MetamaskActions, MetaMaskContext } from '../hooks';
@@ -25,6 +33,7 @@ import {
   subscribe,
   shouldDisplayReconnectButton,
 } from '../utils';
+import { useSDK } from '@metamask/sdk-react';
 
 const Container = styled.div`
   display: flex;
@@ -112,39 +121,83 @@ const ErrorMessage = styled.div`
 
 const Index = () => {
   const [state, dispatch] = useContext(MetaMaskContext);
-  // const [account, setAccount] = useState<string>();
+  const [wakuNode, setWakuNode] = useState<LightNode | null>(null);
+  const [account, setAccount] = useState<string>();
+  const { sdk, connected, connecting, provider, chainId } = useSDK();
+
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+
+
+  useEffect(() => {
+    if (wakuNode) return;
+
+    (async () => {
+      console.log("starting node");
+      const node = await createNode();
+      console.log("node started");
+      setWakuNode(node);
+    })();
+     
+  }, [wakuNode]);
   const goerli_provider = new ethers.JsonRpcProvider("https://eth-goerli.public.blastapi.io");
   // const { sdk, connected, connecting, provider, chainId } = useSDK();
 
-  // const connect = async () => {
-  //   console.log("attempting to connect")
-  //   try {
-  //     const accounts :any= await sdk?.connect();
-  //     console.log("accounts are ",accounts)
-  //     setAccount(accounts?.[0]);
-  //   } catch(err) {
-  //     console.warn(`failed to connect..`, err);
-  //   }
-  // };
+  const connect = async () => {
+    console.log("attempting to connect")
+
+    try {
+
+      const accounts :any= await sdk?.connect();
+      console.log("accounts are ",accounts)
+      setAccount(accounts?.[0]);
+
+      // await connectSnap();
+      // const installedSnap = await getSnap();
+
+
+
+      // dispatch({
+      //   type: MetamaskActions.SetInstalled,
+      //   payload: installedSnap,
+      // });
+    } catch (error) {
+      console.error(error);
+      dispatch({ type: MetamaskActions.SetError, payload: error });
+    }
+
+  };
   // const provider =  new ethers.BrowserProvider(window.ethereum)
   const contractAddress = "0x38E1039eD368EDDd73fBBB64ecaAC4447440026b";
+
 
   const isMetaMaskReady = isLocalSnap(defaultSnapOrigin)
     ? state.isFlask
     : state.snapsDetected;
 
-  const handleConnectClick = async () => {
-    try {
-      await connectSnap();
-      const installedSnap = await getSnap();
+    const handleConnectClick = async () => {
+      try {
+        await connectSnap();
+        const installedSnap = await getSnap();
+  
+        dispatch({
+          type: MetamaskActions.SetInstalled,
+          payload: installedSnap,
+        });
+      } catch (error) {
+        console.error(error);
+        dispatch({ type: MetamaskActions.SetError, payload: error });
+      }
+    };
 
-      dispatch({
-        type: MetamaskActions.SetInstalled,
-        payload: installedSnap,
-      });
-    } catch (error) {
-      console.error(error);
-      dispatch({ type: MetamaskActions.SetError, payload: error });
+  const handleButtonClick = async () => {
+    try {
+      const accounts: any = await sdk?.connect();
+      setAccount(accounts?.[0]);
+    } catch(err) {
+      console.warn(`failed to connect..`, err);
     }
   };
 
@@ -224,9 +277,9 @@ const Index = () => {
     }
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (amount:any) => {
     try {
-      const res : any= await subscribe();
+      const res : any= await subscribe("abhishek0405.eth",amount,30,180);
       await setupRecurringPayments(res);
     }
 
@@ -238,18 +291,15 @@ const Index = () => {
 
   return (
     <Container>
-      <Heading>
+      {/* <Heading>
         Welcome to <Span>template-snap</Span>
-      </Heading>
-      <Subtitle>
-        Get started by editing <code>src/index.ts</code>
-      </Subtitle>
+      </Heading> */}
       <CardContainer>
-        {state.error && (
+        {/* {state.error && (
           <ErrorMessage>
             <b>An error happened:</b> {state.error.message}
           </ErrorMessage>
-        )}
+        )} */}
         {!isMetaMaskReady && (
           <Card
             content={{
@@ -268,16 +318,33 @@ const Index = () => {
               description:
                 'Get started by connecting to and installing the example snap.',
               button: (
-                <ConnectButton
-                  onClick={handleConnectClick}
-                  disabled={!isMetaMaskReady}
-                />
+
+                <>
+                   <button style={{ padding: 10, margin: 10 }} onClick={connect}>
+        Connect
+      </button>
+      {connected && (
+        <div>
+          <>
+            {chainId && `Connected chain: ${chainId}`}
+            <p></p>
+            {account && `Connected account: ${account}`}
+          </>
+        </div>
+      )} 
+                </>
+
+
+                // <ConnectButton
+                //   onClick={handleButtonClick}
+                //   disabled={!isMetaMaskReady}
+                // />
               ),
             }}
             disabled={!isMetaMaskReady}
           />
         )}
-        {shouldDisplayReconnectButton(state.installedSnap) && (
+        {/* {shouldDisplayReconnectButton(state.installedSnap) && (
           <Card
             content={{
               title: 'Reconnect',
@@ -285,19 +352,19 @@ const Index = () => {
                 'While connected to a local running snap this button will always be displayed in order to update the snap if a change is made.',
               button: (
                 <ReconnectButton
-                  onClick={handleConnectClick}
+                  onClick={handleButtonClick}
                   disabled={!state.installedSnap}
                 />
               ),
             }}
             disabled={!state.installedSnap}
           />
-        )}
+        )} */}
         <Card
           content={{
-            title: 'Send Hello message',
+            title: 'Open Snap',
             description:
-              'Display a custom message within a confirmation screen in MetaMask.',
+              'How can I help you?',
             button: (
               <SendHelloButton
                 onClick={handleProcessPrompt}
@@ -316,12 +383,37 @@ const Index = () => {
           content={{
             title: 'Subscribe',
             description:
-              'Subscribe to premium ser',
+              'Click to view subscription plans',
             button: (
-              <SubscribeButton
-                onClick={handleSubscribe}
-                disabled={!state.installedSnap}
-              />
+              // <SubscribeButton
+              //   onClick={handleSubscribe}
+              //   disabled={!state.installedSnap}
+              // />
+
+              <>
+                <Button variant="primary" onClick={handleShow}>
+                  Launch demo modal
+                </Button>
+
+                <Modal show={show} onHide={handleClose}  centered>
+        <Modal.Body>
+          <Row>
+            <Col>
+              <h2>Premium Plan</h2>
+              <p>Price: 10 TIM/month</p>
+              <Button onClick={(e) => handleSubscribe(10)}>Choose</Button>
+            </Col>
+            <Col>
+              <h2>Basic Plan</h2>
+              <p>Price: 5 TIM/month</p>
+              <Button onClick={(e) => handleSubscribe(5)}>Choose</Button>
+            </Col>
+          </Row>
+        </Modal.Body>
+      </Modal>
+              
+              </>
+              
             ),
           }}
           disabled={!state.installedSnap}
@@ -344,15 +436,9 @@ const Index = () => {
           </>
         </div>
       )} */}
-        <Notice>
-          <p>
-            Please note that the <b>snap.manifest.json</b> and{' '}
-            <b>package.json</b> must be located in the server root directory and
-            the bundle must be hosted at the location specified by the location
-            field.
-          </p>
-        </Notice>
+
       </CardContainer>
+      {/* {wakuNode ? <Poll waku={wakuNode} /> : <div>Loading..</div>} */}
     </Container>
   );
 };

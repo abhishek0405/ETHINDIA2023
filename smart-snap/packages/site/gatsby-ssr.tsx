@@ -3,7 +3,7 @@ import { StrictMode } from 'react';
 
 import { App } from './src/App';
 import { Root } from './src/Root';
-// import { MetaMaskProvider } from '@metamask/sdk-react';
+import { MetaMaskUIProvider } from '@metamask/sdk-react-ui';
 
 export const wrapRootElement: GatsbySSR['wrapRootElement'] = ({ element }) => (
   
@@ -21,13 +21,13 @@ export const wrapRootElement: GatsbySSR['wrapRootElement'] = ({ element }) => (
 );
 
 export const wrapPageElement: GatsbySSR['wrapPageElement'] = ({ element }) => (
-  // <MetaMaskProvider debug={false} sdkOptions={{
-  //   checkInstallationImmediately: false,
-  //   dappMetadata: {
-  //     name: "Demo React App",
-  //     url: window.location.host,
-  //   }
-  // }}>
+  <MetaMaskUIProvider debug={false} sdkOptions={{
+    checkInstallationImmediately: false,
+    dappMetadata: {
+      name: "Demo React App",
+      url: window.location.host,
+    }
+  }}>
   <App>{element}</App>
-  // </MetaMaskProvider>
+  </MetaMaskUIProvider>
 );

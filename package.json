@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@metamask/sdk-react": "^0.14.1"
+    "@metamask/sdk-react": "^0.14.1",
+    "@waku/sdk": "^0.0.21"
   }
 }

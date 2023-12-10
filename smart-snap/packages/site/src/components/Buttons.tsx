@@ -1,9 +1,11 @@
-import type { ComponentProps } from 'react';
+import { useState, type ComponentProps } from 'react';
 import styled from 'styled-components';
 
 import { ReactComponent as FlaskFox } from '../assets/flask_fox.svg';
 import type { MetamaskState } from '../hooks';
 import { shouldDisplayReconnectButton } from '../utils';
+import { useSDK } from '@metamask/sdk-react';
+
 
 const Link = styled.a`
   display: flex;
@@ -44,6 +46,9 @@ const Button = styled.button`
   }
 `;
 
+
+
+
 const ButtonText = styled.span`
   margin-left: 1rem;
 `;
@@ -79,10 +84,24 @@ export const InstallFlaskButton = () => (
 
 export const ConnectButton = (props: ComponentProps<typeof Button>) => {
   return (
-    <Button {...props}>
-      <FlaskFox />
-      <ButtonText>Connect</ButtonText>
-    </Button>
+    <>
+    {/* <button style={{ padding: 10, margin: 10 }}>
+        Connect
+      </button>
+      {connected && (
+        <div>
+          <>
+            {chainId && `Connected chain: ${chainId}`}
+            <p></p>
+            {account && `Connected account: ${account}`}
+          </>
+        </div>
+      )} */}
+  </>
+    // <Button {...props}>
+    //   <FlaskFox />
+    //   <ButtonText>Connect</ButtonText>
+    // </Button>
   );
 };
 
@@ -96,7 +115,7 @@ export const ReconnectButton = (props: ComponentProps<typeof Button>) => {
 };
 
 export const SendHelloButton = (props: ComponentProps<typeof Button>) => {
-  return <Button {...props}>Send message</Button>;
+  return <Button {...props}>Open Snap</Button>;
 };
 
 export const SubscribeButton = (props: ComponentProps<typeof Button>) => {
